@@ -1,0 +1,23 @@
+{
+  "name": "phonemail",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "workspaces": [
+    "app/api",
+    "app/web",
+    "packages/*"
+  ],
+  "author": "rohitnishad613",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm --workspace=app/api run start:dev",
+    "dev:web": "npm --workspace=app/web run dev",
+    "build": "npm run build:api && npm run build:web",
+    "build:api": "npm --workspace=app/api run build",
+    "build:web": "npm --workspace=app/web run build"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

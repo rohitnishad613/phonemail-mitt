@@ -1,0 +1,152 @@
+services:
+  api:
+    build:
+      context: ./app/api
+      dockerfile: Dockerfile
+
+    env_file:
+      - ./app/api/.env
+      - ./.env
+
+    restart: unless-stopped
+
+    expose:
+      - "3000"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/v1/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+    volumes:
+      - mail_attachments:/data/attachments
+
+    networks:
+      - internal
+
+    dns:
+      - 1.1.1.1
+
+  web:
+    build:
+      context: ./app/web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+
+    restart: unless-stopped
+
+    depends_on:
+      api:
+        condition: service_healthy
+
+    ports:
+      - "8000:80"
+
+    networks:
+      - internal
+
+  postfix:
+    build:
+      context: ./infrastructure/mail/postfix
+      dockerfile: Dockerfile
+
+    environment:
+      MAIL_DOMAIN: ${MAIL_DOMAIN}
+      MAIL_HOSTNAME: ${MAIL_SMTP_HOST}
+
+    ports:
+      - "25:25"
+
+    depends_on:
+      #rspamd:
+      #  condition: service_started
+      mail-ingest:
+        condition: service_started
+
+    restart: unless-stopped
+
+    networks:
+      - internal
+      - mail
+
+  mail-ingest:
+    build:
+      context: ./infrastructure/mail/ingest
+      dockerfile: Dockerfile
+
+    environment:
+      PORT: 2525
+      API_BASE_URL: http://api:3000
+      MAIL_INGEST_SECRET: ${MAIL_INGEST_SECRET}
+      MAX_MESSAGE_SIZE: ${MAIL_MAX_MESSAGE_SIZE}
+
+    depends_on:
+      api:
+        condition: service_started
+
+    expose:
+      - "2525"
+
+    restart: unless-stopped
+
+    networks:
+      - internal
+      - mail
+
+  #rspamd:
+  #  image: rspamd/rspamd:latest
+#
+  #  volumes:
+  #    - ./infrastructure/mail/rspamd/local.d:/etc/rspamd/local.d:ro
+  #    - ./infrastructure/mail/rspamd/dkim:/var/lib/rspamd/dkim:ro
+  #    - rspamd_data:/var/lib/rspamd
+  #    - rspamd_logs:/var/log/rspamd
+#
+  #  expose:
+  #    - "11332"
+#
+  #  depends_on:
+  #    clamav:
+  #      condition: service_started
+#
+  #  restart: unless-stopped
+#
+  #  networks:
+  #    - mail
+    
+  #clamav:
+  #  image: clamav/clamav:latest
+  #  platform: linux/amd64
+#
+  #  expose:
+  #    - "3310"
+#
+  #  volumes:
+  #    - clamav_data:/var/lib/clamav
+#
+  #  restart: unless-stopped
+#
+  #  networks:
+  #    - mail
+
+networks:
+  internal:
+    driver: bridge
+
+  mail:
+    driver: bridge
+
+volumes:
+  mail_attachments:
+  #rspamd_data:
+  #rspamd_logs:
+  #clamav_data:

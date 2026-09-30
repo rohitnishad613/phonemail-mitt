@@ -1,0 +1,84 @@
+compatibility_level = 3.6
+
+smtpd_banner = $myhostname ESMTP PhoneMail
+biff = no
+
+append_dot_mydomain = no
+readme_directory = no
+
+myhostname = mail.phonemail.tech
+mydomain = phonemail.tech
+myorigin = $mydomain
+
+inet_interfaces = all
+inet_protocols = all
+
+# We are an Internet mail server.
+# Only phonemail.tech is a destination domain.
+relay_domains = phonemail.tech
+
+# Every valid phonemail.tech recipient is passed to
+# the internal mail-ingest SMTP service.
+transport_maps = hash:/etc/postfix/transport
+
+# Never relay arbitrary Internet mail.
+smtpd_relay_restrictions =
+    permit_mynetworks
+    reject_unauth_destination
+
+# Basic SMTP hardening.
+smtpd_helo_required = yes
+
+smtpd_helo_restrictions =
+    reject_invalid_helo_hostname
+    permit_mynetworks
+
+smtpd_sender_restrictions =
+    reject_non_fqdn_sender
+    reject_unknown_sender_domain
+
+smtpd_recipient_restrictions =
+    reject_non_fqdn_recipient
+    reject_unauth_destination
+
+smtpd_data_restrictions =
+    reject_unauth_pipelining
+
+# Do not allow unauthenticated SMTP AUTH.
+smtpd_sasl_auth_enable = no
+
+# Message limits.
+message_size_limit = 26214400
+mailbox_size_limit = 0
+
+# Connection limits.
+smtpd_client_connection_count_limit = 20
+smtpd_client_connection_rate_limit = 30
+
+# Timeouts.
+smtpd_timeout = 60s
+
+# TLS for opportunistic SMTP encryption.
+smtpd_tls_security_level = may
+smtp_tls_security_level = may
+
+smtpd_tls_auth_only = yes
+
+smtpd_tls_loglevel = 1
+smtp_tls_loglevel = 1
+
+# Rspamd Milter.
+#smtpd_milters = inet:rspamd:11332
+#non_smtpd_milters = inet:rspamd:11332
+
+#milter_protocol = 6
+#milter_default_action = accept
+#milter_connect_timeout = 10s
+#milter_command_timeout = 30s
+#milter_content_timeout = 120s
+
+# Prevent clients from discovering accounts through SMTP commands.
+disable_vrfy_command = yes
+
+# Logging.
+maillog_file = /var/log/mail/mail.log
