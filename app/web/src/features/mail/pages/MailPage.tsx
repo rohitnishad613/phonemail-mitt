@@ -22,6 +22,9 @@ import type {
   Conversation,
   MailMessage,
 } from '../types';
+import { FullMailComposer } from '../components/FullMailComposer';
+import { Button } from '@/components/ui/button';
+import { PenLine } from 'lucide-react';
 
 interface Props {
   currentEmail: string;
@@ -43,6 +46,9 @@ export function MailPage({
 
   const [loading, setLoading] =
     useState(true);
+
+  const [composeOpen, setComposeOpen] =
+    useState(false);
 
   const [
     conversationLoading,
@@ -172,6 +178,15 @@ export function MailPage({
             openConversation
           }
         />
+        <Button
+            className="fixed bottom-4 right-4 z-10 p-4"
+            size="lg"
+            onClick={() =>
+              setComposeOpen(true)
+            }
+          >
+            <PenLine />
+        </Button>
       </div>
 
       <div
@@ -206,6 +221,15 @@ export function MailPage({
           )
         ) : (
           <EmptyMailState />
+        )}
+
+        {composeOpen && (
+          <FullMailComposer
+            onClose={() =>
+              setComposeOpen(false)
+            }
+            onSent={loadConversations}
+          />
         )}
       </div>
     </div>
