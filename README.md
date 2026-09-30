@@ -1,3 +1,6 @@
+Add .env file for easy setup
+Included the .env file intentionally for this temporary project. These are just free-trial API keys, and the production environments are completely separate and secure.
+
 # PhoneMail
 
 This project is working but its in-complete i was planning to implement:
