@@ -4,7 +4,7 @@ Included the .env file intentionally for this temporary project. These are just 
 # PhoneMail
 
 This project is working but its in-complete i was planning to implement:
-- Internel deloped SMTP
+- Internet delopyed SMTP
 - IVR Setup to send email via text-to-speech  
 - Encryption
 - Email spam filter using rspamd
